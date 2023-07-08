@@ -1,91 +1,141 @@
 import pygame
 
-toggleControl = 1 # 0 means toggle and 1 means hold
-
-# Initialize Pygame
 pygame.init()
-
-# Define the dimensions of the window
 width = 900
 height = 800
+toggleControl = 1 # 0 means toggle and 1 means hold
+screen = pygame.Surface((width,height)) # screen in which everything will be drawn
+window = pygame.display.set_mode((width, height)) # pygame window, screen will be drawn on this
+pygame.display.set_caption('EXACTLY')
+clock = pygame.time.Clock()
+FPS = 60
 
-# Create the Pygame window
-window = pygame.display.set_mode((width, height))
-
-# Initialize color inversion flags
+# define player action variables
+moving_left = False
+moving_right = False
 invert_colors = False
 k_key_held = False
+
+# define colors
+BG = (255, 255, 255)
 
 # Create a group to hold all sprites
 all_sprites = pygame.sprite.Group()
 
-# Create a red rectangle sprite
-red_rect = pygame.sprite.Sprite()
-red_rect.image = pygame.Surface((50, 50))
-red_rect.image.fill((255, 0, 0))  # Fill with red color (RGB: 255, 0, 0)
-red_rect.rect = red_rect.image.get_rect()
-
 # Set initial position of the red rectangle
 red_rect_position = pygame.mouse.get_pos()
-red_rect.rect.center = red_rect_position
 
-# Add the red rectangle sprite to the group
-all_sprites.add(red_rect)
+# Create a red rectangle sprite
+red_rect = pygame.Rect(red_rect_position[0],red_rect_position[1],50,50)
 
-# Main game loop
-running = True
-while running:
-    if toggleControl == 0:
-    # Handle events if toggle
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                running = False
-            elif event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_k:  # Check if "K" key is pressed
-                    invert_colors = not invert_colors  # Toggle color inversion flag
-    elif toggleControl == 1:
-        # Handle events if hold
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                running = False
-            elif event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_k:  # Check if "K" key is pressed
-                    invert_colors = True  # Enable color inversion
-                    k_key_held = True
-            elif event.type == pygame.KEYUP:
-                if event.key == pygame.K_k:  # Check if "K" key is released
-                    invert_colors = False  # Disable color inversion
-                    k_key_held = False
 
-    # Update game logic
+class Platformer(pygame.sprite.Sprite):
+    def __init__(self, x, y, scale, speed):
+        pygame.sprite.Sprite.__init__(self)
+        self.speed = speed
+        self.direction = 1
+        self.flip = False
+        self.animation_list = []
+        self.frame_index = 0
+        self.update_time = pygame.time.get_ticks()
+        for i in range(8):
+            img = pygame.image.load(f'img/player/run/{i}.png')
+            img = pygame.transform.scale(img, (img.get_width() * scale, img.get_height() * scale))
+            self.animation_list.append(img)
+        self.image = self.animation_list[self.frame_index]
+        self.rect = self.image.get_rect()
+        self.rect.center = (x, y)
 
-    # Clear the window
-    window.fill((255, 255, 255))  # Fill with white color (RGB: 255, 255, 255)
+    def move(self, moving_left, moving_right):
+        # reset movement variables
+        dx = 0
+        dy = 0
+        # assign movement variables if moving left or right
+        if moving_left:
+            dx = -self.speed
+            self.flip = True
+            self.direction = -1
+        if moving_right:
+            dx = self.speed
+            self.flip = False
+            self.direction = -1
 
-    # Create a new surface for rendering
-    inverted_surface = pygame.Surface((width, height))
+        # update rectangle postition
+        self.rect.x += dx
+        self.rect.y += dy
 
-    # Copy the original window surface onto the inverted surface
-    inverted_surface.blit(window, (0, 0))
+    def update_animation(self):
+        # update animation
+        ANIMATION_COOLDOWN = 100
+        # update image depending on current frame
+        self.image = self.animation_list[self.frame_index]
+        # check if enough time has passed since the last update
+        if pygame.time.get_ticks() - self.update_time > ANIMATION_COOLDOWN:
+            self.update_time = pygame.time.get_ticks()
+            self.frame_index += 1
+        # if the animation has run out of frames, then reset back to start
+        if self.frame_index >= len(self.animation_list):
+            self.frame_index = 0
+
+    def draw(self):
+        screen.blit(pygame.transform.flip(self.image, self.flip, False), self.rect)
+
+player = Platformer(200, 200, 2, 7) # x postion, y postition, scale, speed
+
+run = True
+while run:
+    clock.tick(FPS)
+    screen.fill(BG)
+    player.update_animation()
+    player.draw() # draws the platformer on screen
+    player.move(moving_left, moving_right)
+
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            run = False
+        # key is pressed
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_a:
+                moving_left = True
+            if event.key == pygame.K_d:
+                moving_right = True
+            if event.key == pygame.K_ESCAPE:
+                run = False
+            if event.key == pygame.K_k and toggleControl:  # if "K"is pressed and togglecontrol is True
+                invert_colors = True  # Enable color inversion
+                k_key_held = True
+            elif event.key == pygame.K_k and not toggleControl: # if "K"is pressed and togglecontrol is NOT True
+                invert_colors = not invert_colors  # Toggle color inversion flag
+        
+        # key is released
+        if event.type == pygame.KEYUP:
+            if event.key == pygame.K_a:
+                moving_left = False
+            if event.key == pygame.K_d:
+                moving_right = False
+        if event.type == pygame.KEYUP and toggleControl:
+            if event.key == pygame.K_k:
+                invert_colors = False  # Disable color inversion
+                k_key_held = False
 
     # Invert colors if the flag is True and "K" key is held
     if invert_colors and k_key_held:
-        inverted_surface = pygame.transform.invert(inverted_surface)
+        screen = pygame.transform.invert(screen)
         red_rect_position = pygame.mouse.get_pos()  # Update the position of the red rectangle
     else:
-        red_rect_position = red_rect.rect.center  # Store the current position of the red rectangle
+        red_rect_position = [red_rect.x,red_rect.y]  # Store the current position of the red rectangle
 
     # Draw all sprites onto the inverted surface
-    all_sprites.draw(inverted_surface)
+    pygame.draw.rect(screen,(255,0,0),red_rect)
 
     # Draw the inverted surface onto the window
-    window.blit(inverted_surface, (0, 0))
+    window.blit(screen, (0, 0))
 
     # Update the position of the red rectangle
-    red_rect.rect.center = red_rect_position
+    red_rect.x = red_rect_position[0]
+    red_rect.y = red_rect_position[1]
 
     # Update the display
-    pygame.display.flip()
+    pygame.display.update()
 
-# Quit Pygame
 pygame.quit()
