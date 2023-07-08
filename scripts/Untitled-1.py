@@ -12,16 +12,25 @@ height = 800
 # Create the Pygame window
 window = pygame.display.set_mode((width, height))
 
-# Initialize color inversion flag
+# Initialize color inversion flags
 invert_colors = False
+k_key_held = False
 
 # Create a group to hold all sprites
 all_sprites = pygame.sprite.Group()
 
-# Create your sprites and add them to the group
-# Example:
-# sprite = YourSpriteClass()
-# all_sprites.add(sprite)
+# Create a red rectangle sprite
+red_rect = pygame.sprite.Sprite()
+red_rect.image = pygame.Surface((50, 50))
+red_rect.image.fill((255, 0, 0))  # Fill with red color (RGB: 255, 0, 0)
+red_rect.rect = red_rect.image.get_rect()
+
+# Set initial position of the red rectangle
+red_rect_position = pygame.mouse.get_pos()
+red_rect.rect.center = red_rect_position
+
+# Add the red rectangle sprite to the group
+all_sprites.add(red_rect)
 
 # Main game loop
 running = True
@@ -47,7 +56,6 @@ while running:
                 if event.key == pygame.K_k:  # Check if "K" key is released
                     invert_colors = False  # Disable color inversion
                     k_key_held = False
-        
 
     # Update game logic
 
@@ -60,15 +68,21 @@ while running:
     # Copy the original window surface onto the inverted surface
     inverted_surface.blit(window, (0, 0))
 
-    # Invert colors if the flag is True
-    if invert_colors:
+    # Invert colors if the flag is True and "K" key is held
+    if invert_colors and k_key_held:
         inverted_surface = pygame.transform.invert(inverted_surface)
+        red_rect_position = pygame.mouse.get_pos()  # Update the position of the red rectangle
+    else:
+        red_rect_position = red_rect.rect.center  # Store the current position of the red rectangle
 
     # Draw all sprites onto the inverted surface
     all_sprites.draw(inverted_surface)
 
     # Draw the inverted surface onto the window
     window.blit(inverted_surface, (0, 0))
+
+    # Update the position of the red rectangle
+    red_rect.rect.center = red_rect_position
 
     # Update the display
     pygame.display.flip()
