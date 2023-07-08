@@ -1,5 +1,7 @@
 import pygame
 
+toggleControl = 1 # 0 means toggle and 1 means hold
+
 # Initialize Pygame
 pygame.init()
 
@@ -24,13 +26,28 @@ all_sprites = pygame.sprite.Group()
 # Main game loop
 running = True
 while running:
-    # Handle events
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            running = False
-        elif event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_k:  # Check if "K" key is pressed
-                invert_colors = not invert_colors  # Toggle color inversion flag
+    if toggleControl == 0:
+    # Handle events if toggle
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                running = False
+            elif event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_k:  # Check if "K" key is pressed
+                    invert_colors = not invert_colors  # Toggle color inversion flag
+    elif toggleControl == 1:
+        # Handle events if hold
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                running = False
+            elif event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_k:  # Check if "K" key is pressed
+                    invert_colors = True  # Enable color inversion
+                    k_key_held = True
+            elif event.type == pygame.KEYUP:
+                if event.key == pygame.K_k:  # Check if "K" key is released
+                    invert_colors = False  # Disable color inversion
+                    k_key_held = False
+        
 
     # Update game logic
 
