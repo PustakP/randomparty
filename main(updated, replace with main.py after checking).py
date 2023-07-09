@@ -82,7 +82,7 @@ class Player(pygame.sprite.Sprite):    # why would you name the player class as 
             self.frame_index = 0
 
     def draw(self):
-        screen.blit(pygame.transform.flip(self.image, self.flip, False), self.rect)
+        window.blit(pygame.transform.flip(self.image, self.flip, False), self.rect)   # player will not get inverted if player should change window to screen here
 
 class Game():
     def __init__(self):
@@ -122,7 +122,7 @@ class Game():
 
     def main(self):  # put stuff here
         global screen, invert_colors, k_key_held  # idk why but if not metion global it gives local var error
-        screen.fill((255,255,255))
+        screen.blit(backg,(0,0)) # for now normal back ji ke saath play play and test test 
         player.update_animation()
         player.draw() # draws the platformer on screen
         player.move()
