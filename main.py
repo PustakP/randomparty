@@ -3,7 +3,7 @@ import pygame, sys, os
 main is the main game if you are testing "game" then put it here 
 everything that would get inverted,to be drawn on screen
 if something shouldn't be inverted then draw it directly on window
-sys.exit() is neccessary shut the fuck up
+sys.exit() is neccessary shut the fuck up NO YOU DONTTTTT SHUT UP THE FUCK UPIDEUWIOEUOWEIFWE
 put comments to explain function methods or stuff not variables, for variables just name it properly
 """
 pygame.init()
