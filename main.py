@@ -5,6 +5,7 @@ everything that would get inverted,to be drawn on screen
 if something shouldn't be inverted then draw it directly on window
 sys.exit() is neccessary shut the fuck up
 put comments to explain function methods or stuff not variables, for variables just name it properly
+Controls bhi daaldo ek jage pe cuz i forgor the key for the color inversion function
 """
 pygame.init()
 width = 900
